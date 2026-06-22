@@ -2,6 +2,9 @@ body {
     background: #111;
     height: 100vh;
     overflow: hidden;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 4rem;
 }
 
 .game-container {
@@ -29,4 +32,17 @@ canvas {
     display: block;
     background: #000;
     cursor: pointer;
+}
+
+.instruction-container {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 50%;
+    justify-self: center;
+    align-self: center;
+    padding: 2rem;
+    border: 1px solid white;
+    height: fit-content;
 }
