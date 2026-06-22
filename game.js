@@ -1,39 +1,42 @@
 const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d");
 
-    const cols = 6;
-    const rows = 4;
-    const size = 90;
+const cols = 6;
+const rows = 4;
+const size = 90;
 
-    let tvs = [];
-    let gameOver = false;
-    let time = 0;
+let tvs = [];
+let gameOver = false;
+let time = performance.now();
 
-    function randomType() {
-    const r = Math.random();
-    if (r < 0.5) return "eye";
-    if (r < 0.8) return "mouth";
-    return "hand";
+function randomType() {
+    const randomEnemy = Math.random();
+    if (randomEnemy < 0.5) {
+        return "eye";
+    } else if (randomEnemy < 0.8 && time > 1000) {
+        return "mouth";
+    } else if (time > 6000) {
+        return "hand";
     }
+}
 
-    function init() {
+function init() {
     tvs = [];
     for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-        tvs.push({
-            x: x * size,
-            y: y * size,
-            type: randomType(),
-            state: Math.random() < 0.4 ? "on" : "off",
-            spread: 0,
-            hover: 0
-        });
+            tvs.push({
+                x: x * size,
+                y: y * size,
+                type: randomType(),
+                state: Math.random() < 0.4 ? "on" : "off",
+                spread: 0,
+                hover: 0
+            });
         }
     }
-    }
+}
 
-    function drawTV(tv) {
-    // base
+function drawTV(tv) {
     ctx.fillStyle = tv.state === "on" ? "#fff" : "#222";
     ctx.fillRect(tv.x + 5, tv.y + 5, size - 10, size - 10);
 
@@ -44,21 +47,23 @@ const canvas = document.getElementById("game");
     }
 
     // label
-    ctx.fillStyle = "red";
-    ctx.font = "12px monospace";
-    ctx.fillText(tv.type, tv.x + 10, tv.y + 20);
+    if (tv.state === "on") {
+        ctx.fillStyle = "red";
+        ctx.font = "12px monospace";
+        ctx.fillText(tv.type, tv.x + 10, tv.y + 20);
     }
+}
 
-    function draw() {
+function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let tv of tvs) drawTV(tv);
 
-    // UI pressure indicator
+    // UI active indicator
     let onCount = tvs.filter(t => t.state === "on").length;
 
     ctx.fillStyle = "white";
-    ctx.fillText("ON TVs: " + onCount, 10, 390);
+    ctx.fillText("Active TVs: " + onCount, 10, 390);
 
     if (onCount > 10) {
         ctx.fillStyle = "rgba(255,0,0,0.1)";
@@ -70,9 +75,9 @@ const canvas = document.getElementById("game");
         ctx.font = "40px monospace";
         ctx.fillText("SYSTEM FAILURE", 120, 200);
     }
-    }
+}
 
-    function getNeighbors(index) {
+function getNeighbors(index) {
     let neighbors = [];
     let x = index % cols;
     let y = Math.floor(index / cols);
@@ -90,9 +95,9 @@ const canvas = document.getElementById("game");
     }
 
     return neighbors;
-    }
+}
 
-    function interact(tv, index) {
+function interact(tv, index) {
     if (tv.state === "off") return;
 
     if (tv.type === "eye") {
@@ -111,9 +116,9 @@ const canvas = document.getElementById("game");
         let target = tvs[Math.floor(Math.random() * tvs.length)];
         target.state = "on";
     }
-    }
+}
 
-    canvas.addEventListener("click", (e) => {
+canvas.addEventListener("click", (e) => {
     if (gameOver) return;
 
     const rect = canvas.getBoundingClientRect();
@@ -122,18 +127,36 @@ const canvas = document.getElementById("game");
 
     tvs.forEach((tv, i) => {
         if (
-        mx > tv.x && mx < tv.x + size &&
-        my > tv.y && my < tv.y + size
+            mx > tv.x && mx < tv.x + size &&
+            my > tv.y && my < tv.y + size
         ) {
-        interact(tv, i);
+            interact(tv, i);
         }
     });
-    });
+});
 
-    function update() {
+function update() {
     if (gameOver) return;
 
-    time++;
+    // Update the timer every second
+    let running = true;
+
+    function updateTimer() {
+        if (!running) return;
+
+        const elapsedMs = performance.now() - time;
+
+        const totalSeconds = Math.floor(elapsedMs / 1000);
+        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+        const seconds = String(totalSeconds % 60).padStart(2, "0");
+
+        document.getElementById("time").querySelector("span").textContent =
+            `${minutes}:${seconds}`;
+
+        requestAnimationFrame(updateTimer);
+    }
+
+    updateTimer();
 
     // Mouth spread mechanic
     tvs.forEach((tv, i) => {
@@ -143,8 +166,8 @@ const canvas = document.getElementById("game");
         if (tv.spread > 120) {
             let n = getNeighbors(i);
             if (n.length > 0) {
-            let pick = n[Math.floor(Math.random() * n.length)];
-            tvs[pick].state = "on";
+                let pick = n[Math.floor(Math.random() * n.length)];
+                tvs[pick].state = "on";
             }
             tv.spread = 0;
         }
@@ -152,31 +175,31 @@ const canvas = document.getElementById("game");
 
         // Hand passive corruption
         if (tv.type === "hand" && tv.state === "on") {
-        if (Math.random() < 0.01) {
-            let t = tvs[Math.floor(Math.random() * tvs.length)];
-            t.state = "on";
-        }
+            if (Math.random() < 0.01) {
+                let t = tvs[Math.floor(Math.random() * tvs.length)];
+                t.state = "on";
+            }
         }
     });
 
-    // difficulty scaling
+    // Difficulty scaling
     if (time % 300 === 0) {
         let t = tvs[Math.floor(Math.random() * tvs.length)];
         t.state = "on";
     }
 
-    // lose condition
+    // Lose condition
     let onCount = tvs.filter(t => t.state === "on").length;
     if (onCount > 18) {
         gameOver = true;
     }
-    }
+}
 
-    function loop() {
+function loop() {
     update();
     draw();
     requestAnimationFrame(loop);
-    }
+}
 
 init();
 loop();
