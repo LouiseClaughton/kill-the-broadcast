@@ -1,6 +1,7 @@
 body {
     background: #111;
     height: 100vh;
+    overflow: hidden;
 }
 
 .game-container {
@@ -14,6 +15,8 @@ body {
     align-items: center;
     justify-content: center;
     height: 100%;
+    width: fit-content;
+    margin: 0 auto;
 }
 
 .info-container {
@@ -24,14 +27,6 @@ body {
 
 canvas {
     display: block;
-    margin: 0 auto;
     background: #000;
     cursor: pointer;
-}
-
-#ui {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    font-size: 14px;
 }
