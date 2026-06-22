@@ -6,8 +6,13 @@
         <link rel="stylesheet" href="game.css">
     </head>
     <body>
-        <div id="time">Elapsed time: <span></span></div>
-        <canvas id="game" width="600" height="400"></canvas>
+        <div class="game-container">
+            <canvas id="game" width="600" height="400"></canvas>
+            <div class="info-container">
+                <div id="time">Elapsed time: <span></span></div>
+                <div id="score">Score: <span></span></div>
+            </div>
+        </div>
         <script src="game.js"></script>
     </body>
 </html>
