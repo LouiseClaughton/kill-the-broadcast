@@ -75,6 +75,15 @@ function init() {
     }
 }
 
+function reset() {
+    const resetButton = document.getElementById("reset");
+    resetButton.addEventListener("click", (e) => {
+        window.location.reload(); // TEMP
+    })
+}
+
+reset();
+
 function drawTV(tv) {
     if (tv.state === "on") {
         if (tv.type === "eye") {
@@ -151,7 +160,7 @@ canvas.addEventListener("click", (e) => {
 
     tvs.forEach((tv, i) => {
         if (mx > tv.x && mx < tv.x + size && my > tv.y && my < tv.y + size) {
-            if (tv.type === "eye") {
+            if (tv.type === "eye" && tv.state === "on") {
                 tv.state = "off";
                 score++; // Eyes score 1 point
             }

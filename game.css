@@ -5,6 +5,7 @@ body {
     display: grid;
     grid-template-columns: repeat(3,1fr);
     gap: 4rem;
+    font-family: 'Kode Mono';
 }
 
 .game-container {
@@ -30,7 +31,6 @@ body {
 
 canvas {
     display: block;
-    background: #000;
     cursor: pointer;
 }
 
@@ -45,4 +45,8 @@ canvas {
     padding: 2rem;
     border: 1px solid white;
     height: fit-content;
+}
+
+.instruction-container p {
+    font-size: .85rem;
 }
