@@ -4,14 +4,16 @@ const ctx = canvas.getContext("2d");
 const cols = 6;
 const rows = 4;
 const size = 90;
+const timerSpan = document.querySelector("#time span");
 
 let tvs = [];
 let gameOver = false;
 let time = performance.now();
+let lastDifficultyTick = 0;
 
 function randomType() {
     const randomEnemy = Math.random();
-    if (randomEnemy < 0.5) {
+    if (randomEnemy < 0.5 || time < 1000) {
         return "eye";
     } else if (randomEnemy < 0.8 && time > 1000) {
         return "mouth";
@@ -28,9 +30,9 @@ function init() {
                 x: x * size,
                 y: y * size,
                 type: randomType(),
-                state: Math.random() < 0.4 ? "on" : "off",
+                state: Math.random() < 0.2 ? "on" : "off",
                 spread: 0,
-                hover: 0
+                hover: 0,
             });
         }
     }
@@ -60,7 +62,7 @@ function draw() {
     for (let tv of tvs) drawTV(tv);
 
     // UI active indicator
-    let onCount = tvs.filter(t => t.state === "on").length;
+    let onCount = tvs.filter((t) => t.state === "on").length;
 
     ctx.fillStyle = "white";
     ctx.fillText("Active TVs: " + onCount, 10, 390);
@@ -83,7 +85,10 @@ function getNeighbors(index) {
     let y = Math.floor(index / cols);
 
     let dirs = [
-        [1,0],[-1,0],[0,1],[0,-1]
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
     ];
 
     for (let [dx, dy] of dirs) {
@@ -126,10 +131,7 @@ canvas.addEventListener("click", (e) => {
     const my = e.clientY - rect.top;
 
     tvs.forEach((tv, i) => {
-        if (
-            mx > tv.x && mx < tv.x + size &&
-            my > tv.y && my < tv.y + size
-        ) {
+        if (mx > tv.x && mx < tv.x + size && my > tv.y && my < tv.y + size) {
             interact(tv, i);
         }
     });
@@ -138,25 +140,12 @@ canvas.addEventListener("click", (e) => {
 function update() {
     if (gameOver) return;
 
-    // Update the timer every second
-    let running = true;
-
-    function updateTimer() {
-        if (!running) return;
-
-        const elapsedMs = performance.now() - time;
-
-        const totalSeconds = Math.floor(elapsedMs / 1000);
-        const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-        const seconds = String(totalSeconds % 60).padStart(2, "0");
-
-        document.getElementById("time").querySelector("span").textContent =
-            `${minutes}:${seconds}`;
-
-        requestAnimationFrame(updateTimer);
-    }
-
-    updateTimer();
+    // Update timer text once per frame in the main loop.
+    const elapsedMs = performance.now() - time;
+    const totalSeconds = Math.floor(elapsedMs / 1000);
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    timerSpan.textContent = `${minutes}:${seconds}`;
 
     // Mouth spread mechanic
     tvs.forEach((tv, i) => {
@@ -166,8 +155,8 @@ function update() {
         if (tv.spread > 120) {
             let n = getNeighbors(i);
             if (n.length > 0) {
-                let pick = n[Math.floor(Math.random() * n.length)];
-                tvs[pick].state = "on";
+            let pick = n[Math.floor(Math.random() * n.length)];
+            tvs[pick].state = "on";
             }
             tv.spread = 0;
         }
@@ -183,13 +172,25 @@ function update() {
     });
 
     // Difficulty scaling
-    if (time % 300 === 0) {
+    const baseInterval = 2000; // start slow
+    const minInterval = 400;    // never faster than this
+
+    const elapsedSeconds = elapsedMs / 1000;
+
+    // shrink interval over time
+    const dynamicInterval = Math.max(
+        minInterval,
+        baseInterval - elapsedSeconds * 50
+    );
+
+    if (elapsedMs - lastDifficultyTick >= dynamicInterval) {
         let t = tvs[Math.floor(Math.random() * tvs.length)];
         t.state = "on";
+        lastDifficultyTick = elapsedMs;
     }
 
     // Lose condition
-    let onCount = tvs.filter(t => t.state === "on").length;
+    let onCount = tvs.filter((t) => t.state === "on").length;
     if (onCount > 18) {
         gameOver = true;
     }
