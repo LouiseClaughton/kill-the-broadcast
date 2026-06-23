@@ -126,6 +126,10 @@ body {
     text-transform: uppercase;
 }
 
+#instructions-button:hover {
+    cursor: pointer;
+}
+
 /* Game */
 
 .game-container {
