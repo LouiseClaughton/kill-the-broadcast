@@ -76,6 +76,11 @@ function init() {
 }
 
 function drawTV(tv) {
+    const sx = tv.x + 5;
+    const sy = tv.y + 5;
+    const sw = size - 10;
+    const sh = size - 10;
+
     if (tv.state === "on") {
         if (tv.type === "eye") {
             ctx.fillStyle = "#86bf87";
@@ -91,12 +96,56 @@ function drawTV(tv) {
         ctx.fillStyle = "#222";
     }
 
-    ctx.fillRect(tv.x + 5, tv.y + 5, size - 10, size - 10);
+    ctx.fillRect(sx, sy, sw, sh);
 
-    // Glow only when ON
+    // CRT effects only when ON
     if (tv.state === "on") {
+        ctx.save();
+
+    ctx.save();
+
+        // Glow background
+        let glow = ctx.createRadialGradient(
+            sx + sw/2, sy + sh/2, 5,
+            sx + sw/2, sy + sh/2, 80
+        );
+        glow.addColorStop(0, "rgba(255,255,255,0.3)");
+        glow.addColorStop(1, "rgba(0,0,0,0.4)");
+        ctx.fillStyle = glow;
+        ctx.fillRect(sx, sy, sw, sh);
+
+        // Animated noise dots
+        for (let i = 0; i < 300; i++) {
+            const px = sx + Math.random() * sw;
+            const py = sy + Math.random() * sh;
+            const bright = Math.random() * 255;
+            ctx.fillStyle = `rgba(${bright},${bright},${bright},0.06)`;
+            ctx.fillRect(px, py, 1, 1);
+        }
+
+        // Horizontal scanlines
+        ctx.strokeStyle = "rgba(0,0,0,0.3)";
+        ctx.lineWidth = 1;
+        for (let row = sy; row < sy + sh; row += 2) {
+            ctx.beginPath();
+            ctx.moveTo(sx, row);
+            ctx.lineTo(sx + sw, row);
+            ctx.stroke();
+        }
+
+        // Brightness flicker
+        const flicker = 0.03 + Math.random() * 0.03;
+        ctx.fillStyle = `rgba(255,255,255,${flicker})`;
+        ctx.fillRect(sx, sy, sw, sh);
+
+        // Glow border
         ctx.strokeStyle = "rgba(255,255,255,0.3)";
-        ctx.strokeRect(tv.x + 5, tv.y + 5, size - 10, size - 10);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(sx, sy, sw, sh);
+
+    ctx.restore();
+
+        ctx.restore();
     }
 
     // Label only when ON
