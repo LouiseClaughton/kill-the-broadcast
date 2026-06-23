@@ -9,6 +9,11 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap" rel="stylesheet">
+
+        <!-- Crushed Font -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Crushed&display=swap" rel="stylesheet">
     </head>
     <body>
         <button id="instructions-button">Instructions</button>
@@ -17,19 +22,19 @@
             <p>Keep the televisions under control! There are three different types of TV which will require different strategies:</p>
             <p>Eye: Click</p>
             <p>Mouth: Hold</p>
-            <p>TIP: Mouths spread to neighbouring televisions if you don't deal with them fast enough!</p>
             <p>Hand: Hover</p>
+            <p>TIP: Mouths spread to neighbouring televisions if you don't deal with them fast enough!</p>
             <p>TIP: Hands will randomly activate other tiles, meaning things can quickly spiral out of control if left unchecked!</p>
         </div>
         <div class="game-container">
-            <h1>KILL THE BROADCAST</h1>
+            <h1 class="game-title">KILL THE <span>BROADCAST</span></h1>
             <canvas id="game" width="1000" height="500"></canvas>
             <canvas id="tv" width="500" height="400"></canvas>
             <button id="start">Start Game</button>
             <div class="info-container">
-                <div id="time">Time: <span></span></div>
+                <div id="time">TIME: <span></span></div>
                 <div id="reset">RESET</div>
-                <div id="score">Score: <span></span></div>
+                <div id="score">SCORE: <span></span></div>
             </div>
         </div>
         <script src="game.js"></script>

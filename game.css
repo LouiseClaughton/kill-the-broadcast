@@ -13,15 +13,64 @@ body {
 
 /* UI */
 
+.game-title {
+    font-family: Crushed;
+    position: relative;
+    left: -4rem;
+    font-size: 2.5rem;
+    top: -2rem;
+}
+
+.game-title span {
+    display: inline-block;
+    transform: rotate(10deg);
+    position: absolute;
+    top: 0.8rem;
+    left: 7.5rem;
+    color: #EDEA12;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 10px #00aaff,
+        0 0 20px #00aaff,
+        0 0 40px #00aaff;
+    animation: flicker 10s infinite;
+}
+
+@keyframes flicker {
+    0%, 75% { opacity: 1; }
+
+    76% { opacity: 0.2; }
+    77% { opacity: 1; }
+
+    78% { opacity: 0.1; }
+    79% { opacity: 1; }
+
+    /* Completely dead */
+    80%, 88% { opacity: 0; }
+
+    89% { opacity: 0.3; }
+    90% { opacity: 1; }
+
+    91% { opacity: 0; }
+    92%, 100% { opacity: 1; }
+}
+
 #start {
     position: absolute;
     width: 220px;
     height: 170px;
     background: transparent;
     border: none;
-    font-family: 'Kode Mono';
+    font-family: Crushed;
+    font-size: 1rem;
     font-weight: 700;
     color: #191970;
+    border-radius: 16px;
+    text-transform: uppercase;
+    box-shadow:
+        0 0 10px #4283a3,
+        0 0 20px #30576a,
+        0 0 40px #30576a;
 }
 
 #start:hover, #reset:hover {
@@ -36,7 +85,6 @@ body {
     bottom: 2rem;
 }
 
-
 #instruction-container {
     color: white;
     background: black;
@@ -50,16 +98,18 @@ body {
     border: 1px solid white;
     height: fit-content;
     position: absolute;
-    transform: translateY(-200%);
-    transition: transform .3s;
+    transform: translateX(-200%);
+    transition: transform .7s;
+    font-family: Crushed;
 }
 
 #instruction-container.open {
-    transform: translateY(0);
+    transform: translateX(0);
 }
 
 #instruction-container p {
-    font-size: .85rem;
+    font-size: .75rem;
+    font-family: 'Kode Mono';
 }
 
 #instructions-button {
@@ -71,6 +121,8 @@ body {
     position: absolute;
     top: 0;
     left: 0;
+    font-family: Crushed;
+    text-transform: uppercase;
 }
 
 /* Game */
