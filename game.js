@@ -18,9 +18,9 @@ let holdStart = 0;
 let holdTarget = null;
 
 // Game Setup
-const cols = 6;
+const cols = 8;
 const rows = 4;
-const size = 90;
+const size = 120;
 const gridOffsetX = (canvas.width - cols * size) / 2;
 const timerSpan = document.querySelector("#time span");
 const scoreSpan = document.querySelector("#score span");
@@ -75,15 +75,6 @@ function init() {
     }
 }
 
-function reset() {
-    const resetButton = document.getElementById("reset");
-    resetButton.addEventListener("click", (e) => {
-        window.location.reload(); // TEMP
-    })
-}
-
-reset();
-
 function drawTV(tv) {
     if (tv.state === "on") {
         if (tv.type === "eye") {
@@ -124,7 +115,7 @@ function draw() {
     if (gameOver) {
         ctx.fillStyle = "red";
         ctx.font = "40px monospace";
-        ctx.fillText("SYSTEM FAILURE", 120, 200);
+        ctx.fillText("SYSTEM FAILURE", 325, 250);
     }
 }
 
@@ -375,4 +366,3 @@ function loop() {
 }
 
 init();
-loop();

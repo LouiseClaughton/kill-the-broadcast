@@ -11,7 +11,8 @@
         <link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap" rel="stylesheet">
     </head>
     <body>
-        <div class="instruction-container">
+        <button id="instructions-button">Instructions</button>
+        <div id="instruction-container" class="open">
             <h2>AIM OF THE GAME</h2>
             <p>Keep the televisions under control! There are three different types of TV which will require different strategies:</p>
             <p>Eye: Click</p>
@@ -22,7 +23,8 @@
         </div>
         <div class="game-container">
             <h1>KILL THE BROADCAST</h1>
-            <canvas id="game" width="600" height="400"></canvas>
+            <canvas id="game" width="1000" height="500"></canvas>
+            <button id="start">Start Game</button>
             <div class="info-container">
                 <div id="time">Time: <span></span></div>
                 <div id="reset">RESET</div>
@@ -30,5 +32,6 @@
             </div>
         </div>
         <script src="game.js"></script>
+        <script src="ui.js"></script>
     </body>
 </html>
