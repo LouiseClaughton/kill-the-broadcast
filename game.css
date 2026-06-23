@@ -23,9 +23,9 @@ body {
 
 .game-title span {
     display: inline-block;
-    transform: rotate(10deg);
+    transform: rotate(5deg);
     position: absolute;
-    top: 0.8rem;
+    top: 0.4rem;
     left: 7.5rem;
     color: #EDEA12;
     text-shadow:
@@ -98,6 +98,7 @@ body {
     border: 1px solid white;
     height: fit-content;
     position: absolute;
+    left: 2rem;
     transform: translateX(-200%);
     transition: transform .7s;
     font-family: Crushed;
@@ -119,8 +120,8 @@ body {
     border: 1px solid white;
     color: white;
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 2rem;
+    left: 2rem;
     font-family: Crushed;
     text-transform: uppercase;
 }

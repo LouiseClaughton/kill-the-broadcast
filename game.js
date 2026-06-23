@@ -9,8 +9,11 @@ const MOUTH_HOLD_TIME = 500; // 0.5 seconds
 const MOUTH_UNTOUCHED_TIME = 3000; // 3 seconds
 
 // Mouth Spread Rate
+
 let lastMouthSpread = 0;
 const MOUTH_SPREAD_INTERVAL = 5000; // 5 seconds
+
+// Tracking Variables
 
 let hoveredTV = null;
 let previousHoveredTV = null;
@@ -27,30 +30,33 @@ const scoreSpan = document.querySelector("#score span");
 
 let tvs = [];
 let gameOver = false;
-let time = performance.now();
 let score = 0;
 let lastDifficultyTick = 0;
 
-function randomType() {
-    const elapsed = performance.now() - time; // real elapsed time
+const tvImages = {
+    eye: new Image(),
+    mouth: new Image(),
+    hand: new Image(),
+};
+
+tvImages.eye.src = "/assets/eye.png";
+tvImages.mouth.src = "/assets/mouth.png";
+tvImages.hand.src = "/assets/hand.png";
+
+function spawnType(nowMs) {
+    const elapsed = (nowMs - startTime) / 1000;
     const r = Math.random();
 
-    if (elapsed < 10000) {
-        // early game: mostly eyes, some mouths, no hands
-        if (r < 0.8) return "eye";
-        if (r < 0.95) return "mouth";
+    if (elapsed < 10) {
+        return r < 0.85 ? "eye" : "mouth";
     }
 
-    if (elapsed > 10000 && elapsed < 30000) {
-        // mid game: some eyes, some mouths, some hands
-        if (r < 0.5) return "eye";
-        if (r < 0.8) return "mouth";
-        return "hand";
+    if (elapsed < 30) {
+        return r < 0.5 ? "eye" : "mouth";
     }
 
-    // late game: few eyes, mostly mouths, some hands
     if (r < 0.3) return "eye";
-    if (r < 0.7) return "mouth";
+    if (r < 0.6) return "mouth";
     return "hand";
 }
 
@@ -61,7 +67,7 @@ function init() {
             tvs.push({
                 x: gridOffsetX + x * size,
                 y: y * size,
-                type: randomType(), // Start with only eyes
+                type: spawnType(performance.now()),
                 state: "off", // All TVs begin off
                 spread: 0,
                 hover: 0,
@@ -75,6 +81,73 @@ function init() {
     }
 }
 
+// -------------------------------
+// Draw the TVs
+// -------------------------------
+
+function drawCRT(ctx, x, y, w, h, tintColor, time = 0) {
+    ctx.save();
+
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 12);
+    ctx.clip();
+
+    // Glow background
+    const glow = ctx.createRadialGradient(
+        x + w / 2,
+        y + h / 2,
+        20,
+        x + w / 2,
+        y + h / 2,
+        Math.max(w, h),
+    );
+
+    glow.addColorStop(0, tintColor);
+    glow.addColorStop(1, "#001a22");
+
+    ctx.fillStyle = glow;
+    ctx.fillRect(x, y, w, h);
+
+    // Noise
+    for (let i = 0; i < 300; i++) {
+        const px = x + Math.random() * w;
+        const py = y + Math.random() * h;
+        const bright = Math.random() * 255;
+
+        ctx.fillStyle = `rgba(${bright},${bright},${bright},0.08)`;
+
+        ctx.fillRect(px, py, 1, 1);
+    }
+
+    // Horizontal wobble
+    for (let row = 0; row < h; row += 2) {
+        const offset = Math.sin(row * 0.08 + time * 8) * 1.5;
+
+        ctx.fillStyle = "rgba(255,255,255,0.02)";
+
+        ctx.fillRect(x + offset, y + row, w, 1);
+    }
+
+    // Scanlines
+    ctx.strokeStyle = "rgba(0,0,0,0.25)";
+
+    for (let sy = y; sy < y + h; sy += 3) {
+        ctx.beginPath();
+        ctx.moveTo(x, sy);
+        ctx.lineTo(x + w, sy);
+        ctx.stroke();
+    }
+
+    // Flicker
+    const flicker = 0.05 + Math.random() * 0.05;
+
+    ctx.fillStyle = `rgba(255,255,255,${flicker})`;
+
+    ctx.fillRect(x, y, w, h);
+
+    ctx.restore();
+}
+
 function drawTV(tv) {
     const sx = tv.x + 5;
     const sy = tv.y + 5;
@@ -82,77 +155,24 @@ function drawTV(tv) {
     const sh = size - 10;
 
     if (tv.state === "on") {
-        if (tv.type === "eye") {
-            ctx.fillStyle = "#86bf87";
-        } else if (tv.type === "mouth") {
-            ctx.fillStyle = "#c96d6d";
-        } else if (tv.type === "hand") {
-            ctx.fillStyle = "#86a5b0";
-        } else {
-            ctx.fillStyle = "#fff";
+        const colorMap = {
+            eye: "#86bf87",
+            mouth: "#c96d6d",
+            hand: "#86a5b0",
+        };
+
+        drawCRT(ctx, sx, sy, sw, sh, colorMap[tv.type]);
+
+        const img = tvImages[tv.type];
+        if (img && img.complete) {
+            ctx.drawImage(img, sx, sy, sw, sh);
         }
     } else {
-        // OFF state = always grey/black
         ctx.fillStyle = "#222";
-    }
 
-    ctx.fillRect(sx, sy, sw, sh);
-
-    // CRT effects only when ON
-    if (tv.state === "on") {
-        ctx.save();
-
-    ctx.save();
-
-        // Glow background
-        let glow = ctx.createRadialGradient(
-            sx + sw/2, sy + sh/2, 5,
-            sx + sw/2, sy + sh/2, 80
-        );
-        glow.addColorStop(0, "rgba(255,255,255,0.3)");
-        glow.addColorStop(1, "rgba(0,0,0,0.4)");
-        ctx.fillStyle = glow;
-        ctx.fillRect(sx, sy, sw, sh);
-
-        // Animated noise dots
-        for (let i = 0; i < 300; i++) {
-            const px = sx + Math.random() * sw;
-            const py = sy + Math.random() * sh;
-            const bright = Math.random() * 255;
-            ctx.fillStyle = `rgba(${bright},${bright},${bright},0.06)`;
-            ctx.fillRect(px, py, 1, 1);
-        }
-
-        // Horizontal scanlines
-        ctx.strokeStyle = "rgba(0,0,0,0.3)";
-        ctx.lineWidth = 1;
-        for (let row = sy; row < sy + sh; row += 2) {
-            ctx.beginPath();
-            ctx.moveTo(sx, row);
-            ctx.lineTo(sx + sw, row);
-            ctx.stroke();
-        }
-
-        // Brightness flicker
-        const flicker = 0.03 + Math.random() * 0.03;
-        ctx.fillStyle = `rgba(255,255,255,${flicker})`;
-        ctx.fillRect(sx, sy, sw, sh);
-
-        // Glow border
-        ctx.strokeStyle = "rgba(255,255,255,0.3)";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(sx, sy, sw, sh);
-
-    ctx.restore();
-
-        ctx.restore();
-    }
-
-    // Label only when ON
-    if (tv.state === "on") {
-        ctx.fillStyle = "black";
-        ctx.font = "12px monospace";
-        ctx.fillText(tv.type, tv.x + 10, tv.y + 20);
+        ctx.beginPath();
+        ctx.roundRect(sx, sy, sw, sh, 12);
+        ctx.fill();
     }
 }
 
@@ -163,8 +183,8 @@ function draw() {
 
     if (gameOver) {
         ctx.fillStyle = "red";
-        ctx.font = "40px monospace";
-        ctx.fillText("SYSTEM FAILURE", 325, 250);
+        ctx.font = "40px 'Crushed', monospace";
+        ctx.fillText("SYSTEM FAILURE", 400, 250);
     }
 }
 
@@ -218,7 +238,7 @@ canvas.addEventListener("mousemove", (e) => {
 
     tvs.forEach((tv, i) => {
         if (mx > tv.x && mx < tv.x + size && my > tv.y && my < tv.y + size) {
-        hoveredTV = { tv, i };
+            hoveredTV = { tv, i };
         }
     });
 
@@ -275,7 +295,7 @@ function update() {
     const now = performance.now();
 
     // Update timer text once per frame in the main loop.
-    const elapsedMs = now - time;
+    const elapsedMs = now - startTime;
     const totalSeconds = Math.floor(elapsedMs / 1000);
     const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
     const seconds = String(totalSeconds % 60).padStart(2, "0");
@@ -295,13 +315,13 @@ function update() {
             ) {
                 mouths.push(i);
             }
-        }
+            }
 
-        if (mouths.length > 0) {
-            const sourceIndex = mouths[Math.floor(Math.random() * mouths.length)];
-            const neighbors = getNeighbors(sourceIndex).filter(
-                (index) => tvs[index].type !== "mouth",
-            );
+            if (mouths.length > 0) {
+                const sourceIndex = mouths[Math.floor(Math.random() * mouths.length)];
+                const neighbors = getNeighbors(sourceIndex).filter(
+                    (index) => tvs[index].type !== "mouth",
+                );
 
             if (neighbors.length > 0) {
                 const targetIndex =
@@ -323,7 +343,8 @@ function update() {
     tvs.forEach((tv, i) => {
         if (tv.type === "hand" && tv.state === "on") {
             if (Math.random() < 0.01) {
-                let t = tvs[Math.floor(Math.random() * tvs.length)];
+                let offTVs = tvs.filter((tv) => tv.state === "off");
+                let t = offTVs[Math.floor(Math.random() * offTVs.length)];
                 t.state = "on";
             }
         }
@@ -354,7 +375,7 @@ function update() {
         }
     }
 
-  // Mouth hold mechanic
+    // Mouth hold mechanic
     if (holdTarget && holdTarget.type === "mouth") {
         const heldTime = performance.now() - holdStart;
 
@@ -381,22 +402,21 @@ function update() {
     );
 
     if (!mutatedThisFrame && elapsedMs - lastDifficultyTick >= dynamicInterval) {
-        let t = tvs[Math.floor(Math.random() * tvs.length)];
+        let offTVs = tvs.filter((tv) => tv.state === "off");
+        let t = offTVs[Math.floor(Math.random() * offTVs.length)];
+
+        const elapsedSeconds = (now - startTime) / 1000;
+
         if (!t.typeLocked) {
-            // Check if any mouths exist
-            const hasMouths = tvs.some((tv) => tv.type === "mouth");
-            if (!hasMouths && elapsedMs > 5000) {
-                // Spawn first mouth only if none exist and game is past 5s
-                t.type = "mouth";
+            let type = spawnType(now);
+            t.type = type;
+
+            if (type === "mouth") {
                 t.typeLocked = true;
                 t.lastTouchedAt = now;
-                mutatedThisFrame = true;
-            } else {
-                // Assign only eye or hand (mouths come from spread after initial spawn)
-                const r = Math.random();
-                t.type = r < 0.7 ? "eye" : "hand";
             }
         }
+
         t.state = "on";
         lastDifficultyTick = elapsedMs;
     }
@@ -408,7 +428,13 @@ function update() {
     }
 }
 
+let startTime = 0;
+
 function loop() {
+    if (!startTime) {
+        startTime = performance.now();
+    }
+
     update();
     draw();
     requestAnimationFrame(loop);
