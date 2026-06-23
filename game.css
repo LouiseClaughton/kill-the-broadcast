@@ -7,17 +7,24 @@ body {
     position: relative;
 }
 
+.hidden {
+    display: none;
+}
+
 /* UI */
 
 #start {
     position: absolute;
+    width: 220px;
+    height: 170px;
+    background: transparent;
+    border: none;
+    font-family: 'Kode Mono';
+    font-weight: 700;
+    color: #191970;
 }
 
-#start.hidden {
-    display: none;
-}
-
-#reset:hover {
+#start:hover, #reset:hover {
     cursor: pointer;
 }
 
@@ -86,4 +93,8 @@ body {
 canvas {
     display: block;
     cursor: pointer;
+}
+
+#tv {
+    position: absolute;
 }

@@ -18,10 +18,12 @@ function reset() {
 
 function start() {
     const startButton = document.getElementById("start");
+    const tv = document.getElementById("tv");
     startButton.addEventListener("click", (e) => {
         loop();
         toggleInstructions();
         startButton.classList.add("hidden");
+        tv.classList.add("hidden");
     })
 }
 
