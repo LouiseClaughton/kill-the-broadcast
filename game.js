@@ -1,7 +1,9 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
+// -------------------------------
 // Game Variables
+// -------------------------------
 
 const COOLDOWN = 2000;
 const HAND_HOVER_TIME = 1000; // 1 second
@@ -21,10 +23,12 @@ let holdStart = 0;
 let holdTarget = null;
 
 // Game Setup
+
 const cols = 8;
 const rows = 4;
 const size = 120;
 const gridOffsetX = (canvas.width - cols * size) / 2;
+
 const timerSpan = document.querySelector("#time span");
 const scoreSpan = document.querySelector("#score span");
 
@@ -32,6 +36,8 @@ let tvs = [];
 let gameOver = false;
 let score = 0;
 let lastDifficultyTick = 0;
+
+// TV Images by Type
 
 const tvImages = {
     eye: new Image(),
@@ -43,22 +49,40 @@ tvImages.eye.src = "/assets/eye.png";
 tvImages.mouth.src = "/assets/mouth.png";
 tvImages.hand.src = "/assets/hand.png";
 
+// -------------------------------
+// TV Spawner
+// -------------------------------
+
 function spawnType(nowMs) {
     const elapsed = (nowMs - startTime) / 1000;
     const r = Math.random();
 
-    if (elapsed < 10) {
-        return r < 0.85 ? "eye" : "mouth";
-    }
-
     if (elapsed < 30) {
-        return r < 0.5 ? "eye" : "mouth";
+        return "eye"; // Only eyes for the first 20 seconds
     }
 
-    if (r < 0.3) return "eye";
-    if (r < 0.6) return "mouth";
-    return "hand";
+    if (elapsed > 30 && elapsed < 60) {
+        return r < 0.85 ? "eye" : "mouth"; // Between 30 and 60 seconds, mostly eyes with some mouths
+    }
+
+    if (elapsed > 60 && elapsed < 90) {
+        // Start to see more mouths and some hands between 60 and 90 seconds
+        if (r < 0.5) return "eye";
+        if (r < 0.8) return "mouth";
+        return "hand";
+    }
+
+    if (elapsed > 90) {
+        // Equal distribution of all three types over 90 seconds
+        if (r < 0.3) return "eye";
+        if (r < 0.6) return "mouth";
+        return "hand";
+    }
 }
+
+// -------------------------------
+// Initialise the TVs
+// -------------------------------
 
 function init() {
     tvs = [];
@@ -188,6 +212,12 @@ function draw() {
     }
 }
 
+// -------------------------------
+// Mechanics
+// -------------------------------
+
+// Get screen neighbours (for mouth spread function)
+
 function getNeighbors(index) {
     let neighbors = [];
     let x = index % cols;
@@ -228,7 +258,7 @@ canvas.addEventListener("click", (e) => {
     });
 });
 
-// Hover listener
+// Hover listener for hand mechanics
 canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -242,7 +272,7 @@ canvas.addEventListener("mousemove", (e) => {
         }
     });
 
-    // Clear hover timer if we moved away from the previous TV
+    // Clear hover timer if mouse moved away from the previous TV
     if (
         previousHoveredTV &&
         (!hoveredTV || hoveredTV.tv !== previousHoveredTV.tv)
@@ -253,7 +283,17 @@ canvas.addEventListener("mousemove", (e) => {
     previousHoveredTV = hoveredTV;
 });
 
-// Mousedown listener
+canvas.addEventListener("mouseleave", () => {
+    if (previousHoveredTV) {
+        previousHoveredTV.tv._hoverStart = 0;
+    }
+    hoveredTV = null;
+    previousHoveredTV = null;
+    holdTarget = null;
+    holdStart = 0;
+});
+
+// Mousedown listener for mouth mechanics
 canvas.addEventListener("mousedown", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -278,15 +318,9 @@ canvas.addEventListener("mouseup", () => {
     holdStart = 0;
 });
 
-canvas.addEventListener("mouseleave", () => {
-    if (previousHoveredTV) {
-        previousHoveredTV.tv._hoverStart = 0;
-    }
-    hoveredTV = null;
-    previousHoveredTV = null;
-    holdTarget = null;
-    holdStart = 0;
-});
+// -------------------------------
+// Update Game
+// -------------------------------
 
 function update() {
     if (gameOver) return;
@@ -395,7 +429,7 @@ function update() {
 
     const elapsedSeconds = elapsedMs / 1000;
 
-    // shrink interval over time
+    // Shrink interval over time
     const dynamicInterval = Math.max(
         minInterval,
         baseInterval - elapsedSeconds * 50,
@@ -423,7 +457,7 @@ function update() {
 
     // Lose condition
     let onCount = tvs.filter((t) => t.state === "on").length;
-    if (onCount > 18) {
+    if (onCount == 32) {
         gameOver = true;
     }
 }
