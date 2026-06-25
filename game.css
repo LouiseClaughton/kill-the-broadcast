@@ -50,7 +50,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 6rem;
+    margin-top: 4rem;
     max-height: 155px;
 }
 
@@ -177,6 +177,7 @@ body {
     display: none;
     left: 50%;
     transform: translateX(-50%);
+    margin-top: 1rem;
 }
 
 @media (min-width: 769px) {
