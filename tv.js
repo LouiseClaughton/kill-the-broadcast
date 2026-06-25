@@ -27,10 +27,6 @@ function drawCRTScreen(ctx, t, colour, canvas){
     const w = cw;
     const h = ch;
 
-    console.log('Dimensions: ', w, h);
-
-    console.log('Canvas Dimensions: ', canvas.width, canvas.height);
-
     const x = (cw - w);
     const y = (ch - h);
 

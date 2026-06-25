@@ -11,6 +11,12 @@ body {
     grid-template-columns: 1fr;
 }
 
+@media (max-width: 768px) {
+    .game-container {
+        padding-bottom: 3rem;
+    }
+}
+
 @media (min-width: 769px) {
     body {
         display: flex;
@@ -35,7 +41,6 @@ body {
     height: 2.5rem;
     width: 2.5rem;
     margin-bottom: 1rem;
-    margin-left: 2rem;
 }
 
 .title {
@@ -45,7 +50,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 8rem;
+    margin-top: 6rem;
     max-height: 155px;
 }
 
@@ -53,6 +58,10 @@ body {
     .title {
         grid-column: 2;
         margin-top: 2rem;
+    }
+
+    .logo {
+        margin-left: 2rem;
     }
 }
 
@@ -164,10 +173,15 @@ body {
     display: flex;
     justify-content: space-between;
     position: absolute;
-    bottom: 2rem;
     display: none;
     left: 50%;
     transform: translateX(-50%);
+}
+
+@media (min-width: 769px) {
+    #info-container {
+        bottom: 2rem;
+    }
 }
 
 #instruction-container {
@@ -234,17 +248,20 @@ body {
     height: fit-content;
     font-family: Crushed;
     grid-row: 3;
-    width: 85%;
+    width: fit-content;
     margin-bottom: 2rem;
+    display: none;
+    padding: 0 2rem;
 }
 
 #leaderboard-container.open {
-    transform: translateX(0);
+    display: grid;
 }
 
 #leaderboard-container .score-container {
     display: flex;
     gap: 2rem;
+    margin-bottom: 1rem;
 }
 
 @media (min-width: 769px) {
@@ -259,7 +276,7 @@ body {
     justify-content: space-between;
     font-size: 0.75rem;
     font-family: "Kode Mono";
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
 }
 
 #leaderboard-button {
@@ -279,7 +296,8 @@ body {
     cursor: pointer;
 }
 
-.score-column-1, .score-column-2 {
+.score-column-1,
+.score-column-2 {
     display: flex;
     flex-direction: column;
 }
@@ -294,6 +312,11 @@ body {
         width: auto;
         padding: 2rem;
         margin-bottom: 0;
+        display: block;
+    }
+
+    #leaderboard-container.open {
+        transform: translateX(0);
     }
 }
 
@@ -308,7 +331,6 @@ body {
 }
 
 .game-container {
-    margin: 0;
     background: #111;
     color: white;
     font-family: monospace;
@@ -357,7 +379,7 @@ canvas {
 
 #initials-canvas {
     position: absolute;
-    top:calc(50% + 125px);
+    top: calc(50% + 125px);
     left: 50%;
     transform: translateX(-50%);
     display: none;

@@ -32,8 +32,16 @@ let holdTarget = null;
 
 // Game Setup
 
-let cols = 8;
-let rows = 4;
+let cols;
+let rows;
+
+if (window.innerWidth < 768) {
+    cols = 4;
+    rows = 6;
+} else {
+    cols = 8;
+    rows = 4;
+}
 
 let size = 120;
 let gridOffsetX = 0;
@@ -471,7 +479,10 @@ function update() {
 
     // Lose condition
     let onCount = tvs.filter((t) => t.state === "on").length;
-    if (onCount == 32) {
+    if (window.innerWidth > 769 && onCount == 32) {
+        gameOver = true;
+        gameOverHandle(score);
+    } else if (window.innerWidth < 769 && onCount == 24) {
         gameOver = true;
         gameOverHandle(score);
     }
@@ -666,12 +677,6 @@ function draw() {
     }
 
     for (let tv of tvs) drawTV(tv);
-
-    if (gameOver) {
-        ctx.fillStyle = "red";
-        ctx.font = "40px 'Crushed', monospace";
-        ctx.fillText("SYSTEM FAILURE", 400, 250);
-    }
 }
 
 // -------------------------------
