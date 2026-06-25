@@ -38,9 +38,7 @@ body {
 /* Title & Logo */
 
 .logo {
-    height: 2.5rem;
-    width: 2.5rem;
-    margin-bottom: 1rem;
+    display: none;
 }
 
 .title {
@@ -50,7 +48,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin-top: 4rem;
+    margin-top: 8rem;
     max-height: 155px;
 }
 
@@ -62,6 +60,10 @@ body {
 
     .logo {
         margin-left: 2rem;
+        height: 2.5rem;
+        width: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
     }
 }
 
