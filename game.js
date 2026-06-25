@@ -606,6 +606,9 @@ async function drawLeaderboard() {
 
     const scores = await getTopTen();
 
+    const firstFive = scores.slice(0, 5);
+    const secondFive = scores.slice(5, 10);
+
     container.innerHTML = "";
 
     const title = document.createElement("h2");
@@ -615,12 +618,25 @@ async function drawLeaderboard() {
     const scoreContainer = document.createElement("div");
     scoreContainer.classList.add("score-container");
 
-    scores.forEach((entry, i) => {
+    const scoreColumn1 = document.createElement("div");
+    scoreColumn1.classList.add("score-column-1");
+    const scoreColumn2 = document.createElement("div");
+    scoreColumn2.classList.add("score-column-2");
+
+    firstFive.forEach((entry, i) => {
         const row = document.createElement("div");
         row.textContent = `${i + 1}. ${entry.player_name} - ${entry.score}`;
-        scoreContainer.appendChild(row);
+        scoreColumn1.appendChild(row);
     });
 
+    secondFive.forEach((entry, i) => {
+        const row = document.createElement("div");
+        row.textContent = `${i + 6}. ${entry.player_name} - ${entry.score}`;
+        scoreColumn2.appendChild(row);
+    });
+
+    scoreContainer.appendChild(scoreColumn1);
+    scoreContainer.appendChild(scoreColumn2);
     container.appendChild(scoreContainer);
 }
 
@@ -644,6 +660,25 @@ function draw() {
         ctx.fillText("SYSTEM FAILURE", 400, 250);
     }
 }
+
+// -------------------------------
+// RESIZE
+// -------------------------------
+
+function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = canvas.clientHeight || (displayWidth * 0.8);
+
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+
+    ctx.scale(dpr, dpr);
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
 // -------------------------------
 // INIT
