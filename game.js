@@ -797,21 +797,13 @@ async function getTopTen() {
 // -------------------------------
 
 async function drawLeaderboard() {
-    const container = document.getElementById("leaderboard-container");
-
     const scores = await getTopTen();
 
     const firstFive = scores.slice(0, 5);
     const secondFive = scores.slice(5, 10);
 
-    container.innerHTML = "";
-
-    const title = document.createElement("h2");
-    title.textContent = "LEADERBOARD";
-    container.appendChild(title);
-
-    const scoreContainer = document.createElement("div");
-    scoreContainer.classList.add("score-container");
+    const scoreContainer = document.querySelector(".score-container");
+    scoreContainer.innerHTML = "";
 
     const scoreColumn1 = document.createElement("div");
     scoreColumn1.classList.add("score-column-1");

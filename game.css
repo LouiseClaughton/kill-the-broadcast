@@ -146,6 +146,22 @@ body {
     }
 }
 
+.heading {
+    display: flex;
+    justify-content: space-between;
+}
+
+.close {
+    color: white;
+    background-color: transparent;
+    border: none;
+    padding-left: 4rem;
+}
+
+.close:hover {
+    cursor: pointer;
+}
+
 #start {
     position: absolute;
     width: 220px;

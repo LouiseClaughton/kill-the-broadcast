@@ -44,6 +44,15 @@ leaderboardButton.addEventListener("click", (e) => {
     toggleLeaderboard();
 })
 
+let closeButtons = document.querySelectorAll(".close");
+closeButtons.forEach((button) => {
+    button.addEventListener("click", (e) => {
+        const parent = e.target.parentElement;
+        const window = parent.parentElement;
+        window.classList.remove("open");
+    });
+})
+
 // -------------------------------
 // RESET GAME
 // -------------------------------
