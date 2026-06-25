@@ -345,6 +345,7 @@ body {
 canvas {
     display: block;
     cursor: pointer;
+    touch-action: none;
 }
 
 #start-tv {
@@ -407,34 +408,40 @@ canvas {
 }
 
 #name-entry {
-    position: absolute;
-    top: calc(50% + 210px);
+    position: fixed;
+    top: 75%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     display: none;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
     font-family: Crushed;
     color: white;
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    width: min(90vw, 340px);
+    z-index: 999;
 }
 
 #player-initials {
-    width: 200px;
+    width: 100%;
     padding: 0.75rem;
     font-family: monospace;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     text-align: center;
     text-transform: uppercase;
-    background: #222;
-    border: 2px solid white;
+    letter-spacing: 0.4rem;
+    background: #111;
     color: white;
+    border: none;
 }
 
 #submit-score {
-    padding: 0.75rem 2rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
     background: transparent;
-    border: 2px solid white;
+    border: 1px solid white;
     color: white;
     font-family: Crushed;
     text-transform: uppercase;

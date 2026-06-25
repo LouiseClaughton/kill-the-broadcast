@@ -8,6 +8,15 @@ const ctx = canvas.getContext("2d");
 
 const initialsCanvas = document.getElementById("initials-canvas");
 const initialsCtx = initialsCanvas.getContext("2d");
+const nameEntry = document.getElementById("name-entry");
+const playerInitialsInput = document.getElementById("player-initials");
+const submitScoreButton = document.getElementById("submit-score");
+
+// Detect whether the site is being viewed on a mobile device
+const isTouchDevice =
+    window.matchMedia("(pointer: coarse)").matches ||
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0;
 
 // -------------------------------
 // Game Variables
@@ -25,10 +34,14 @@ const MOUTH_SPREAD_INTERVAL = 5000; // 5 seconds
 
 // Tracking Variables
 
+const DOUBLE_TAP_THRESHOLD = 300;
 let hoveredTV = null;
 let previousHoveredTV = null;
 let holdStart = 0;
 let holdTarget = null;
+let touchHoldTarget = null;
+let touchHoldStart = 0;
+let lastTouchTap = { time: 0, index: -1 };
 
 // Game Setup
 
@@ -211,15 +224,15 @@ function drawTV(tv) {
 
         const img = tvImages[tv.type];
         if (img && img.complete) {
-            const scale = Math.max(sw / img.width, sh / img.height);
+        const scale = Math.max(sw / img.width, sh / img.height);
 
-            const dw = img.width * scale;
-            const dh = img.height * scale;
+        const dw = img.width * scale;
+        const dh = img.height * scale;
 
-            const dx = sx + (sw - dw) / 2;
-            const dy = sy + (sh - dh) / 2;
+        const dx = sx + (sw - dw) / 2;
+        const dy = sy + (sh - dh) / 2;
 
-            ctx.drawImage(img, dx, dy, dw, dh);
+        ctx.drawImage(img, dx, dy, dw, dh);
         }
     } else {
         ctx.fillStyle = "#222";
@@ -259,6 +272,25 @@ function getNeighbors(index) {
     return neighbors;
 }
 
+function getTVAtPoint(x, y) {
+    for (let i = 0; i < tvs.length; i++) {
+        const tv = tvs[i];
+        if (x > tv.x && x < tv.x + size && y > tv.y && y < tv.y + size) {
+            return { tv, index: i };
+        }
+    }
+    return null;
+}
+
+function getTouchPosition(e) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.changedTouches[0];
+    return {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top,
+    };
+}
+
 canvas.addEventListener("click", (e) => {
     if (gameOver) return;
 
@@ -276,6 +308,89 @@ canvas.addEventListener("click", (e) => {
     });
 });
 
+canvas.addEventListener("touchstart", (e) => {
+    if (!isTouchDevice || gameOver) return;
+    e.preventDefault();
+
+    const { x, y } = getTouchPosition(e);
+    const hit = getTVAtPoint(x, y);
+    if (!hit) return;
+
+    if (hit.tv.type === "mouth") {
+        holdTarget = hit.tv;
+        touchHoldTarget = hit.tv;
+        holdStart = touchHoldStart = performance.now();
+        hit.tv.lastTouchedAt = holdStart;
+    }
+});
+
+canvas.addEventListener("touchmove", (e) => {
+    if (!isTouchDevice || gameOver || !touchHoldTarget) return;
+    e.preventDefault();
+
+    const { x, y } = getTouchPosition(e);
+    const tv = touchHoldTarget;
+
+    if (x < tv.x || x > tv.x + size || y < tv.y || y > tv.y + size) {
+        touchHoldTarget = null;
+        holdTarget = null;
+        holdStart = 0;
+        touchHoldStart = 0;
+    }
+});
+
+canvas.addEventListener("touchend", (e) => {
+    if (!isTouchDevice || gameOver) return;
+    e.preventDefault();
+
+    const { x, y } = getTouchPosition(e);
+    const hit = getTVAtPoint(x, y);
+    const now = performance.now();
+
+    if (!hit) {
+        touchHoldTarget = null;
+        holdTarget = null;
+        holdStart = 0;
+        touchHoldStart = 0;
+        return;
+    }
+
+    const { tv, index } = hit;
+
+    if (tv.type === "eye" && tv.state === "on") {
+        tv.state = "off";
+        score++;
+        lastTouchTap.time = 0;
+        lastTouchTap.index = -1;
+        return;
+    }
+
+    if (tv.type === "hand" && tv.state === "on") {
+        if (
+            now - lastTouchTap.time < DOUBLE_TAP_THRESHOLD &&
+            lastTouchTap.index === index
+        ) {
+            tv.state = "off";
+            score += 3;
+            tv._handHovered = false;
+            lastTouchTap.time = 0;
+            lastTouchTap.index = -1;
+        } else {
+            lastTouchTap.time = now;
+            lastTouchTap.index = index;
+        }
+        return;
+    }
+
+    if (tv.type === "mouth") {
+        touchHoldTarget = null;
+        holdTarget = null;
+        holdStart = 0;
+        touchHoldStart = 0;
+        return;
+    }
+});
+
 // Hover listener for hand mechanics
 
 canvas.addEventListener("mousemove", (e) => {
@@ -287,7 +402,7 @@ canvas.addEventListener("mousemove", (e) => {
 
     tvs.forEach((tv, i) => {
         if (mx > tv.x && mx < tv.x + size && my > tv.y && my < tv.y + size) {
-            hoveredTV = { tv, i };
+        hoveredTV = { tv, i };
         }
     });
 
@@ -362,13 +477,13 @@ function update() {
     if (!mutatedThisFrame && now - lastMouthSpread >= MOUTH_SPREAD_INTERVAL) {
         const mouths = [];
         for (let i = 0; i < tvs.length; i++) {
-        if (
-            tvs[i].type === "mouth" &&
-            tvs[i].state === "on" &&
-            now - tvs[i].lastTouchedAt >= MOUTH_UNTOUCHED_TIME
-        ) {
-            mouths.push(i);
-        }
+            if (
+                tvs[i].type === "mouth" &&
+                tvs[i].state === "on" &&
+                now - tvs[i].lastTouchedAt >= MOUTH_UNTOUCHED_TIME
+            ) {
+                mouths.push(i);
+            }
         }
 
         if (mouths.length > 0) {
@@ -399,8 +514,8 @@ function update() {
             if (Math.random() < 0.01) {
                 let offTVs = tvs.filter((tv) => tv.state === "off");
                 if (offTVs.length > 0) {
-                let t = offTVs[Math.floor(Math.random() * offTVs.length)];
-                t.state = "on";
+                    let t = offTVs[Math.floor(Math.random() * offTVs.length)];
+                    t.state = "on";
                 }
             }
         }
@@ -509,9 +624,22 @@ function gameOverHandle(scoreValue) {
         gameCanvas.classList.remove("visible");
         endTV.classList.add("visible");
         end.classList.add("visible");
-        initialsCanvas.style.display = "block";
         enteringName = true;
         finalScore = scoreValue;
+
+        if (isTouchDevice) {
+            initialsCanvas.style.display = "none";
+            if (nameEntry) {
+                nameEntry.style.display = "flex";
+                playerInitialsInput.value = initials.join("");
+                playerInitialsInput.focus();
+            }
+        } else {
+            initialsCanvas.style.display = "block";
+            if (nameEntry) {
+                nameEntry.style.display = "none";
+            }
+        }
     }, 3000);
 }
 
@@ -547,10 +675,53 @@ document.addEventListener("keydown", async (e) => {
         await submitScore(name, finalScore);
         enteringName = false;
         initialsCanvas.style.display = "none";
+        if (nameEntry) {
+            nameEntry.style.display = "none";
+        }
         window.location.reload();
         drawLeaderboard();
     }
 });
+
+function normalizeInitials(value) {
+    return value
+        .toUpperCase()
+        .replace(/[^A-Z]/g, "")
+        .slice(0, 3)
+        .padEnd(3, "A");
+}
+
+async function submitInitials(name) {
+    const normalized = normalizeInitials(name);
+    await submitScore(normalized, finalScore);
+    enteringName = false;
+    initialsCanvas.style.display = "none";
+    if (nameEntry) {
+        nameEntry.style.display = "none";
+    }
+    window.location.reload();
+    drawLeaderboard();
+}
+
+if (playerInitialsInput) {
+    playerInitialsInput.addEventListener("input", (e) => {
+        e.target.value = normalizeInitials(e.target.value);
+    });
+    playerInitialsInput.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            await submitInitials(playerInitialsInput.value);
+        }
+    });
+}
+
+if (submitScoreButton) {
+    submitScoreButton.addEventListener("click", async () => {
+        if (playerInitialsInput) {
+            await submitInitials(playerInitialsInput.value);
+        }
+    });
+}
 
 // -------------------------------
 // INITIALS SCREEN (CANVAS)
@@ -568,8 +739,7 @@ function drawInitialsScreen() {
     const blink = Math.floor(performance.now() / 300) % 2;
 
     const spacing = 80;
-    const startX =
-        (initialsCanvas.width - spacing * (initials.length - 1)) / 2;
+    const startX = (initialsCanvas.width - spacing * (initials.length - 1)) / 2;
 
     initialsCtx.font = "16px 'Kode Mono', monospace";
     initialsCtx.textAlign = "center";
@@ -699,12 +869,7 @@ function resizeCanvas() {
     const maxWidth = window.innerWidth - 50;
     const maxHeight = window.innerHeight - 250;
 
-    size = Math.floor(
-        Math.min(
-            maxWidth / cols,
-            maxHeight / rows
-        )
-    );
+    size = Math.floor(Math.min(maxWidth / cols, maxHeight / rows));
 
     const gridWidth = cols * size;
     const gridHeight = rows * size;
