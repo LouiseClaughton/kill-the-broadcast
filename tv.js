@@ -19,12 +19,16 @@ function roundedRect(x,y,w,h,r,ctx){
     ctx.closePath();
 }
 
-function drawCRTScreen(ctx, t, colour){
+function drawCRTScreen(ctx, t, colour, canvas){
+    const cw = canvas.width;
+    const ch = canvas.height;
 
-    const x = 140;
-    const y = 115;
-    const w = 220;
-    const h = 170;
+    // scale based on canvas size
+    const w = cw;
+    const h = ch;
+
+    const x = (cw - w);
+    const y = (ch - h);
 
     ctx.save();
 
@@ -126,8 +130,8 @@ function animate() {
     startTVctx.clearRect(0, 0, startTVcanvas.width, startTVcanvas.height);
     endTVctx.clearRect(0, 0, endTVcanvas.width, endTVcanvas.height);
 
-    drawCRTScreen(startTVctx, t, "#55ffff");
-    drawCRTScreen(endTVctx, t, "#ff5555");
+    drawCRTScreen(startTVctx, t, "#55ffff", startTVcanvas);
+    drawCRTScreen(endTVctx, t, "#ff5555", endTVcanvas);
 
     requestAnimationFrame(animate);
 }

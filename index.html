@@ -1,84 +1,89 @@
 <!doctype html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>KILL THE BROADCAST</title>
-        <link rel="stylesheet" href="game.css" />
-        <link rel="icon" type="image/png" href="favicon.png" />
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KILL THE BROADCAST</title>
+    <link rel="stylesheet" href="game.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
 
-        <!-- Kode Mono Font -->
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap"
-            rel="stylesheet"
-        />
+    <!-- Kode Mono Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap"
+      rel="stylesheet"
+    />
 
-        <!-- Crushed Font -->
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Crushed&display=swap"
-            rel="stylesheet"
-        />
-    </head>
-    <body>
-        <!-- Instructions -->
-        <button id="instructions-button">Instructions</button>
-        <div id="instruction-container" class="open">
-            <h2>AIM OF THE GAME</h2>
-            <div>
-                <p>
-                    Keep the televisions under control! There are three different types of
-                    TV which will require different strategies:
-                </p>
-                <p>Eye: Click</p>
-                <p>Mouth: Hold</p>
-                <p>Hand: Hover</p>
-                <p>
-                    TIP: Mouths spread to neighbouring televisions if you don't deal with
-                    them fast enough!
-                </p>
-                <p>
-                    TIP: Hands will randomly activate other tiles, meaning things can
-                    quickly spiral out of control if left unchecked!
-                </p>
-            </div>
-        </div>
+    <!-- Crushed Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Crushed&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Instructions -->
+    <button id="instructions-button">Instructions</button>
+    <div id="instruction-container" class="open">
+      <h2>AIM OF THE GAME</h2>
+      <div>
+        <p>
+          Keep the televisions under control! There are three different types of
+          TV which will require different strategies:
+        </p>
+        <p>Eye: Click / tap</p>
+        <p>Mouth: Hold / touch and hold</p>
+        <p>Hand: Hover on desktop / double tap on mobile</p>
+        <p>
+          TIP: Mouths spread to neighbouring televisions if you don't deal with
+          them fast enough!
+        </p>
+        <p>
+          TIP: Hands will randomly activate other tiles, meaning things can
+          quickly spiral out of control if left unchecked!
+        </p>
+      </div>
+    </div>
 
-        <!-- Main Game Container -->
-        <div class="game-container">
-            <a class="title" href="/">
-                <img class="logo" src="/favicon.png" />
-                <h1 class="game-title">KILL THE <span>BROADCAST</span></h1>
-            </a>
+    <!-- Main Game Container -->
+    <div class="game-container">
+      <a class="title" href="/">
+        <img class="logo" src="/favicon.png" />
+        <h1 class="game-title">KILL THE <span>BROADCAST</span></h1>
+      </a>
 
-            <!-- Canvases -->
-            <canvas id="game" width="1000" height="500"></canvas>
-            <canvas id="start-tv" width="500" height="400"></canvas>
-            <canvas id="end-tv" width="500" height="400"></canvas>
-            <canvas id="initials-canvas" width="500" height="200"></canvas>
-            <button id="start">Start Game</button>
-            <button id="end">Game Over</button>
+      <!-- Canvases -->
+      <canvas id="game"></canvas>
+      <canvas id="start-tv"></canvas>
+      <canvas id="end-tv"></canvas>
+      <canvas id="initials-canvas" width="500" height="200"></canvas>
+      <div id="name-entry">
+        <input id="player-initials" maxlength="3" placeholder="ABC" />
+        <button id="submit-score">Submit</button>
+      </div>
+      <button id="start">Start Game</button>
+      <button id="end">Game Over</button>
 
-            <!-- Score, Time, and Reset -->
-            <div id="info-container">
-                <div id="time">TIME: <span></span></div>
-                <div id="reset">RESET</div>
-                <div id="score">SCORE: <span></span></div>
-            </div>
-        </div>
+      <!-- Score, Time, and Reset -->
+      <div id="info-container">
+        <div id="time">TIME: <span></span></div>
+        <div id="reset">RESET</div>
+        <div id="score">SCORE: <span></span></div>
+      </div>
+    </div>
 
-        <!-- Leaderboard -->
-        <button id="leaderboard-button">Leaderboard</button>
-        <div id="leaderboard-container" class="open">
-            <h2>LEADERBOARD</h2>
-        </div>
+    <!-- Leaderboard -->
+    <button id="leaderboard-button">Leaderboard</button>
+    <div id="leaderboard-container" class="open">
+      <h2>LEADERBOARD</h2>
+    </div>
 
-        <!-- Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-        <script src="game.js"></script>
-        <script src="ui.js"></script>
-        <script src="tv.js"></script>
-    </body>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+    <script src="tv.js"></script>
+  </body>
 </html>

@@ -1,8 +1,22 @@
+
+// -------------------------------
+// UI Toggle
+// -------------------------------
+
 /* Instructions Toggle */
+
 const instructionsButton = document.getElementById("instructions-button");
+const instructions = document.getElementById("instruction-container");
+
+if (window.innerWidth > 769) {
+    instructions.classList.add("open");
+} else {
+    // Force closed by default on mobile/small screens
+    instructions.classList.remove("open");
+    instructions.style.transition = "none";
+}
 
 function toggleInstructions() {
-    const instructions = document.getElementById("instruction-container");
     instructions.classList.toggle("open");
 }
 
@@ -22,7 +36,10 @@ leaderboardButton.addEventListener("click", (e) => {
     toggleLeaderboard();
 })
 
-/* Reset Game */
+// -------------------------------
+// RESET GAME
+// -------------------------------
+
 function reset() {
     const resetButton = document.getElementById("reset");
     resetButton.addEventListener("click", (e) => {
@@ -35,7 +52,12 @@ function reset() {
     });
 }
 
-/* Start Game */
+reset();
+
+// -------------------------------
+// START GAME
+// -------------------------------
+
 function start() {
     const startButton = document.getElementById("start");
     const startTv = document.getElementById("start-tv");
@@ -43,14 +65,20 @@ function start() {
     const infoContainer = document.getElementById("info-container");
     startButton.addEventListener("click", (e) => {
         loop();
-        toggleInstructions();
+        
+        if (window.innerWidth > 769) {
+            toggleInstructions();
+        }
         toggleLeaderboard();
         startButton.classList.add("hidden");
         startTv.classList.add("hidden");
         infoContainer.classList.add("visible-flex");
         game.classList.add("visible");
+
+        setTimeout(() => {
+            resizeCanvas();
+        }, 100);
     })
 }
 
 start();
-reset();
