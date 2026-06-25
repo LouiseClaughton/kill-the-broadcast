@@ -83,6 +83,7 @@ body {
     left: -4rem;
     font-size: 2.5rem;
     top: -2rem;
+    margin-bottom: 0;
 }
 
 .game-title span {
@@ -247,11 +248,11 @@ body {
     border: 1px solid white;
     height: fit-content;
     font-family: Crushed;
-    grid-row: 3;
     width: fit-content;
     margin-bottom: 2rem;
     display: none;
     padding: 0 2rem;
+    position: absolute;
 }
 
 #leaderboard-container.open {
@@ -421,7 +422,7 @@ canvas {
     border-radius: 16px;
     padding: 1rem 1.25rem;
     width: min(90vw, 340px);
-    z-index: 999;
+    z-index: 9999;
 }
 
 #player-initials {

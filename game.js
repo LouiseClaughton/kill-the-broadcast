@@ -224,15 +224,15 @@ function drawTV(tv) {
 
         const img = tvImages[tv.type];
         if (img && img.complete) {
-        const scale = Math.max(sw / img.width, sh / img.height);
+            const scale = Math.max(sw / img.width, sh / img.height);
 
-        const dw = img.width * scale;
-        const dh = img.height * scale;
+            const dw = img.width * scale;
+            const dh = img.height * scale;
 
-        const dx = sx + (sw - dw) / 2;
-        const dy = sy + (sh - dh) / 2;
+            const dx = sx + (sw - dw) / 2;
+            const dy = sy + (sh - dh) / 2;
 
-        ctx.drawImage(img, dx, dy, dw, dh);
+            ctx.drawImage(img, dx, dy, dw, dh);
         }
     } else {
         ctx.fillStyle = "#222";
@@ -582,8 +582,8 @@ function update() {
                 t.type = type;
 
                 if (type === "mouth") {
-                    t.typeLocked = true;
-                    t.lastTouchedAt = now;
+                t.typeLocked = true;
+                t.lastTouchedAt = now;
                 }
             }
 
@@ -627,12 +627,16 @@ function gameOverHandle(scoreValue) {
         enteringName = true;
         finalScore = scoreValue;
 
-        if (isTouchDevice) {
+        const useMobileEntry = isTouchDevice || window.innerWidth <= 768;
+
+        if (useMobileEntry) {
             initialsCanvas.style.display = "none";
             if (nameEntry) {
                 nameEntry.style.display = "flex";
-                playerInitialsInput.value = initials.join("");
+                if (playerInitialsInput) {
+                playerInitialsInput.value = "";
                 playerInitialsInput.focus();
+                }
             }
         } else {
             initialsCanvas.style.display = "block";
@@ -687,12 +691,11 @@ function normalizeInitials(value) {
     return value
         .toUpperCase()
         .replace(/[^A-Z]/g, "")
-        .slice(0, 3)
-        .padEnd(3, "A");
+        .slice(0, 3);
 }
 
 async function submitInitials(name) {
-    const normalized = normalizeInitials(name);
+    const normalized = normalizeInitials(name).padEnd(3, "A");
     await submitScore(normalized, finalScore);
     enteringName = false;
     initialsCanvas.style.display = "none";

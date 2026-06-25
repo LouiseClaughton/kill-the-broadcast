@@ -26,9 +26,17 @@ instructionsButton.addEventListener("click", (e) => {
 
 /* Leaderboard Toggle */
 const leaderboardButton = document.getElementById("leaderboard-button");
+const leaderboard = document.getElementById("leaderboard-container");
+
+if (window.innerWidth > 769) {
+    leaderboard.classList.add("open");
+} else {
+    // Force closed by default on mobile/small screens
+    leaderboard.classList.remove("open");
+    leaderboard.style.transition = "none";
+}
 
 function toggleLeaderboard() {
-    const leaderboard = document.getElementById("leaderboard-container");
     leaderboard.classList.toggle("open");
 }
 
@@ -68,8 +76,8 @@ function start() {
         
         if (window.innerWidth > 769) {
             toggleInstructions();
+            toggleLeaderboard();
         }
-        toggleLeaderboard();
         startButton.classList.add("hidden");
         startTv.classList.add("hidden");
         infoContainer.classList.add("visible-flex");
