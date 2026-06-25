@@ -1,3 +1,8 @@
+
+// -------------------------------
+// UI Toggle
+// -------------------------------
+
 /* Instructions Toggle */
 
 const instructionsButton = document.getElementById("instructions-button");
@@ -31,7 +36,10 @@ leaderboardButton.addEventListener("click", (e) => {
     toggleLeaderboard();
 })
 
-/* Reset Game */
+// -------------------------------
+// RESET GAME
+// -------------------------------
+
 function reset() {
     const resetButton = document.getElementById("reset");
     resetButton.addEventListener("click", (e) => {
@@ -44,7 +52,12 @@ function reset() {
     });
 }
 
-/* Start Game */
+reset();
+
+// -------------------------------
+// START GAME
+// -------------------------------
+
 function start() {
     const startButton = document.getElementById("start");
     const startTv = document.getElementById("start-tv");
@@ -52,6 +65,7 @@ function start() {
     const infoContainer = document.getElementById("info-container");
     startButton.addEventListener("click", (e) => {
         loop();
+        
         if (window.innerWidth > 769) {
             toggleInstructions();
         }
@@ -60,8 +74,11 @@ function start() {
         startTv.classList.add("hidden");
         infoContainer.classList.add("visible-flex");
         game.classList.add("visible");
+
+        setTimeout(() => {
+            resizeCanvas();
+        }, 100);
     })
 }
 
 start();
-reset();

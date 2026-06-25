@@ -32,10 +32,13 @@ let holdTarget = null;
 
 // Game Setup
 
-const cols = 8;
-const rows = 4;
-const size = 120;
-const gridOffsetX = (canvas.width - cols * size) / 2;
+let cols = 8;
+let rows = 4;
+
+let size = 120;
+let gridOffsetX = 0;
+let gridOffsetY = 0;
+let cellPadding = 6;
 
 const timerSpan = document.querySelector("#time span");
 const scoreSpan = document.querySelector("#score span");
@@ -101,7 +104,7 @@ function init() {
         for (let x = 0; x < cols; x++) {
             tvs.push({
                 x: gridOffsetX + x * size,
-                y: y * size,
+                y: gridOffsetY + y * size,
                 type: spawnType(performance.now()),
                 state: "off", // All TVs begin off
                 spread: 0,
@@ -184,10 +187,10 @@ function drawCRT(ctx, x, y, w, h, tintColor, time = 0) {
 }
 
 function drawTV(tv) {
-    const sx = tv.x + 5;
-    const sy = tv.y + 5;
-    const sw = size - 10;
-    const sh = size - 10;
+    const sx = tv.x + cellPadding;
+    const sy = tv.y + cellPadding;
+    const sw = size - cellPadding * 2;
+    const sh = size - cellPadding * 2;
 
     if (tv.state === "on") {
         const colorMap = {
@@ -200,7 +203,15 @@ function drawTV(tv) {
 
         const img = tvImages[tv.type];
         if (img && img.complete) {
-            ctx.drawImage(img, sx, sy, sw, sh);
+            const scale = Math.max(sw / img.width, sh / img.height);
+
+            const dw = img.width * scale;
+            const dh = img.height * scale;
+
+            const dx = sx + (sw - dw) / 2;
+            const dy = sy + (sh - dh) / 2;
+
+            ctx.drawImage(img, dx, dy, dw, dh);
         }
     } else {
         ctx.fillStyle = "#222";
@@ -626,12 +637,14 @@ async function drawLeaderboard() {
     firstFive.forEach((entry, i) => {
         const row = document.createElement("div");
         row.textContent = `${i + 1}. ${entry.player_name} - ${entry.score}`;
+        row.classList.add("score");
         scoreColumn1.appendChild(row);
     });
 
     secondFive.forEach((entry, i) => {
         const row = document.createElement("div");
         row.textContent = `${i + 6}. ${entry.player_name} - ${entry.score}`;
+        row.classList.add("score");
         scoreColumn2.appendChild(row);
     });
 
@@ -665,16 +678,46 @@ function draw() {
 // RESIZE
 // -------------------------------
 
+function updateTVPositions() {
+    tvs.forEach((tv, index) => {
+        const col = index % cols;
+        const row = Math.floor(index / cols);
+
+        tv.x = gridOffsetX + col * size;
+        tv.y = gridOffsetY + row * size;
+    });
+}
+
 function resizeCanvas() {
     const dpr = window.devicePixelRatio || 1;
 
-    const displayWidth = canvas.clientWidth;
-    const displayHeight = canvas.clientHeight || (displayWidth * 0.8);
+    const maxWidth = window.innerWidth - 50;
+    const maxHeight = window.innerHeight - 250;
 
-    canvas.width = displayWidth * dpr;
-    canvas.height = displayHeight * dpr;
+    size = Math.floor(
+        Math.min(
+            maxWidth / cols,
+            maxHeight / rows
+        )
+    );
 
-    ctx.scale(dpr, dpr);
+    const gridWidth = cols * size;
+    const gridHeight = rows * size;
+
+    canvas.style.width = `${gridWidth}px`;
+    canvas.style.height = `${gridHeight}px`;
+
+    canvas.width = gridWidth * dpr;
+    canvas.height = gridHeight * dpr;
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    gridOffsetX = 0;
+    gridOffsetY = 0;
+
+    cellPadding = Math.max(2, Math.floor(size * 0.08));
+
+    updateTVPositions();
 }
 
 window.addEventListener("resize", resizeCanvas);
