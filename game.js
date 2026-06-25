@@ -1,5 +1,13 @@
+const supabaseUrl = "https://dcgaoqmgmyyqdztzyfkq.supabase.co";
+const supabaseKey = "sb_publishable_lqFW2OiuI4wk-aoxqi2GPw_PBuCYSQZ";
+
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+
+const initialsCanvas = document.getElementById("initials-canvas");
+const initialsCtx = initialsCanvas.getContext("2d");
 
 // -------------------------------
 // Game Variables
@@ -36,6 +44,7 @@ let tvs = [];
 let gameOver = false;
 let score = 0;
 let lastDifficultyTick = 0;
+let startTime = 0;
 
 // TV Images by Type
 
@@ -54,7 +63,7 @@ tvImages.hand.src = "/assets/hand.png";
 // -------------------------------
 
 function spawnType(nowMs) {
-    const elapsed = (nowMs - startTime) / 1000;
+    const elapsed = startTime ? (nowMs - startTime) / 1000 : 0;
     const r = Math.random();
 
     if (elapsed < 30) {
@@ -78,6 +87,8 @@ function spawnType(nowMs) {
         if (r < 0.6) return "mouth";
         return "hand";
     }
+
+    return "eye";
 }
 
 // -------------------------------
@@ -200,18 +211,6 @@ function drawTV(tv) {
     }
 }
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (let tv of tvs) drawTV(tv);
-
-    if (gameOver) {
-        ctx.fillStyle = "red";
-        ctx.font = "40px 'Crushed', monospace";
-        ctx.fillText("SYSTEM FAILURE", 400, 250);
-    }
-}
-
 // -------------------------------
 // Mechanics
 // -------------------------------
@@ -259,6 +258,7 @@ canvas.addEventListener("click", (e) => {
 });
 
 // Hover listener for hand mechanics
+
 canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -294,6 +294,7 @@ canvas.addEventListener("mouseleave", () => {
 });
 
 // Mousedown listener for mouth mechanics
+
 canvas.addEventListener("mousedown", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -342,20 +343,20 @@ function update() {
     if (!mutatedThisFrame && now - lastMouthSpread >= MOUTH_SPREAD_INTERVAL) {
         const mouths = [];
         for (let i = 0; i < tvs.length; i++) {
-            if (
-                tvs[i].type === "mouth" &&
-                tvs[i].state === "on" &&
-                now - tvs[i].lastTouchedAt >= MOUTH_UNTOUCHED_TIME
-            ) {
-                mouths.push(i);
-            }
-            }
+        if (
+            tvs[i].type === "mouth" &&
+            tvs[i].state === "on" &&
+            now - tvs[i].lastTouchedAt >= MOUTH_UNTOUCHED_TIME
+        ) {
+            mouths.push(i);
+        }
+        }
 
-            if (mouths.length > 0) {
-                const sourceIndex = mouths[Math.floor(Math.random() * mouths.length)];
-                const neighbors = getNeighbors(sourceIndex).filter(
-                    (index) => tvs[index].type !== "mouth",
-                );
+        if (mouths.length > 0) {
+            const sourceIndex = mouths[Math.floor(Math.random() * mouths.length)];
+            const neighbors = getNeighbors(sourceIndex).filter(
+                (index) => tvs[index].type !== "mouth",
+            );
 
             if (neighbors.length > 0) {
                 const targetIndex =
@@ -378,8 +379,10 @@ function update() {
         if (tv.type === "hand" && tv.state === "on") {
             if (Math.random() < 0.01) {
                 let offTVs = tvs.filter((tv) => tv.state === "off");
+                if (offTVs.length > 0) {
                 let t = offTVs[Math.floor(Math.random() * offTVs.length)];
                 t.state = "on";
+                }
             }
         }
     });
@@ -437,32 +440,217 @@ function update() {
 
     if (!mutatedThisFrame && elapsedMs - lastDifficultyTick >= dynamicInterval) {
         let offTVs = tvs.filter((tv) => tv.state === "off");
-        let t = offTVs[Math.floor(Math.random() * offTVs.length)];
+        if (offTVs.length > 0) {
+            let t = offTVs[Math.floor(Math.random() * offTVs.length)];
 
-        const elapsedSeconds = (now - startTime) / 1000;
+            if (!t.typeLocked) {
+                let type = spawnType(now);
+                t.type = type;
 
-        if (!t.typeLocked) {
-            let type = spawnType(now);
-            t.type = type;
-
-            if (type === "mouth") {
-                t.typeLocked = true;
-                t.lastTouchedAt = now;
+                if (type === "mouth") {
+                    t.typeLocked = true;
+                    t.lastTouchedAt = now;
+                }
             }
-        }
 
-        t.state = "on";
-        lastDifficultyTick = elapsedMs;
+            t.state = "on";
+            lastDifficultyTick = elapsedMs;
+        }
     }
 
     // Lose condition
     let onCount = tvs.filter((t) => t.state === "on").length;
     if (onCount == 32) {
         gameOver = true;
+        gameOverHandle(score);
     }
 }
 
-let startTime = 0;
+// -------------------------------
+// Arcade Name Entry State
+// -------------------------------
+
+let initials = ["A", "A", "A"];
+let selectedLetter = 0;
+let enteringName = false;
+let finalScore = 0;
+
+// -------------------------------
+// GAME OVER
+// -------------------------------
+
+function gameOverHandle(scoreValue) {
+    const gameCanvas = document.getElementById("game");
+    const endTV = document.getElementById("end-tv");
+    const end = document.getElementById("end");
+    setTimeout(() => {
+        gameCanvas.classList.remove("visible");
+        endTV.classList.add("visible");
+        end.classList.add("visible");
+        initialsCanvas.style.display = "block";
+        enteringName = true;
+        finalScore = scoreValue;
+    }, 3000);
+}
+
+// -------------------------------
+// ARCADE INPUT
+// -------------------------------
+
+document.addEventListener("keydown", async (e) => {
+    if (!enteringName) return;
+
+    if (e.key === "ArrowLeft") {
+        selectedLetter = (selectedLetter + 2) % 3;
+    }
+
+    if (e.key === "ArrowRight") {
+        selectedLetter = (selectedLetter + 1) % 3;
+    }
+
+    if (e.key === "ArrowUp") {
+        let code = initials[selectedLetter].charCodeAt(0) + 1;
+        if (code > 90) code = 65;
+        initials[selectedLetter] = String.fromCharCode(code);
+    }
+
+    if (e.key === "ArrowDown") {
+        let code = initials[selectedLetter].charCodeAt(0) - 1;
+        if (code < 65) code = 90;
+        initials[selectedLetter] = String.fromCharCode(code);
+    }
+
+    if (e.key === "Enter") {
+        const name = initials.join("");
+        await submitScore(name, finalScore);
+        enteringName = false;
+        initialsCanvas.style.display = "none";
+        window.location.reload();
+        drawLeaderboard();
+    }
+});
+
+// -------------------------------
+// INITIALS SCREEN (CANVAS)
+// -------------------------------
+
+function drawInitialsScreen() {
+    initialsCtx.fillStyle = "#111";
+    initialsCtx.fillRect(0, 0, initialsCanvas.width, initialsCanvas.height);
+
+    initialsCtx.fillStyle = "white";
+    initialsCtx.font = "20px 'Kode Mono', monospace";
+    initialsCtx.textAlign = "center";
+    initialsCtx.fillText("ENTER INITIALS", initialsCanvas.width / 2, 50);
+
+    const blink = Math.floor(performance.now() / 300) % 2;
+
+    const spacing = 80;
+    const startX =
+        (initialsCanvas.width - spacing * (initials.length - 1)) / 2;
+
+    initialsCtx.font = "16px 'Kode Mono', monospace";
+    initialsCtx.textAlign = "center";
+
+    for (let i = 0; i < 3; i++) {
+        const x = startX + i * spacing;
+        const y = 120;
+
+        initialsCtx.fillStyle = i === selectedLetter ? "red" : "white";
+        initialsCtx.fillText(initials[i], x, y);
+
+        if (i === selectedLetter && blink) {
+            initialsCtx.fillText("^", x, y - 20);
+        }
+    }
+}
+
+// -------------------------------
+// SUPABASE FUNCTIONS
+// -------------------------------
+
+async function submitScore(playerName, scoreValue) {
+    const { error } = await supabaseClient.from("Leaderboard").insert([
+        {
+            player_name: playerName,
+            score: scoreValue,
+        },
+    ]);
+
+    if (error) {
+        console.error(error);
+    }
+}
+
+async function getTopTen() {
+    const { data, error } = await supabaseClient
+        .from("Leaderboard")
+        .select("player_name, score")
+        .order("score", { ascending: false })
+        .limit(10);
+
+    if (error) {
+        console.error(error);
+        return [];
+    }
+
+    return data;
+}
+
+// -------------------------------
+// LEADERBOARD DOM
+// -------------------------------
+
+async function drawLeaderboard() {
+    const container = document.getElementById("leaderboard-container");
+
+    const scores = await getTopTen();
+
+    container.innerHTML = "";
+
+    const title = document.createElement("h2");
+    title.textContent = "LEADERBOARD";
+    container.appendChild(title);
+
+    const scoreContainer = document.createElement("div");
+    scoreContainer.classList.add("score-container");
+
+    scores.forEach((entry, i) => {
+        const row = document.createElement("div");
+        row.textContent = `${i + 1}. ${entry.player_name} - ${entry.score}`;
+        scoreContainer.appendChild(row);
+    });
+
+    container.appendChild(scoreContainer);
+}
+
+// -------------------------------
+// MAIN DRAW LOOP
+// -------------------------------
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (enteringName) {
+        drawInitialsScreen();
+        return;
+    }
+
+    for (let tv of tvs) drawTV(tv);
+
+    if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "40px 'Crushed', monospace";
+        ctx.fillText("SYSTEM FAILURE", 400, 250);
+    }
+}
+
+// -------------------------------
+// INIT
+// -------------------------------
+
+drawLeaderboard();
+init();
 
 function loop() {
     if (!startTime) {
@@ -473,5 +661,3 @@ function loop() {
     draw();
     requestAnimationFrame(loop);
 }
-
-init();
