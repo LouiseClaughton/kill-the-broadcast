@@ -222,6 +222,8 @@ body {
     transition: transform 0.7s;
     font-family: Crushed;
     z-index: 1;
+    max-height: 40vh;
+    overflow: scroll;
 }
 
 @media (min-width: 769px) {
@@ -272,6 +274,8 @@ body {
     display: none;
     padding: 0 2rem;
     position: absolute;
+    max-height: 40vh;
+    overflow: scroll;
 }
 
 #leaderboard-container.open {
