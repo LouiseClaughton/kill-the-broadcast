@@ -826,7 +826,6 @@ async function drawLeaderboard() {
 
     scoreContainer.appendChild(scoreColumn1);
     scoreContainer.appendChild(scoreColumn2);
-    container.appendChild(scoreContainer);
 }
 
 // -------------------------------
