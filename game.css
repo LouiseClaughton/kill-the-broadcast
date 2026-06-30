@@ -229,6 +229,7 @@ body {
 @media (min-width: 769px) {
     #instruction-container {
         width: 20%;
+        max-height: 60vh;
     }
 }
 
